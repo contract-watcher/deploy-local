@@ -1,0 +1,58 @@
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+    ports:
+      - "55432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 20
+    networks:
+      - contract-watcher
+
+  core:
+    image: ghcr.io/contract-watcher/contract-watcher-core:latest
+    container_name: svc-core
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8080:8080"
+      - "8081:8081"
+    command: [ "--migrate" ]
+    environment:
+      DbConnections__Postgres__ConnectionString: "User ID=postgres;Password=postgres;Host=postgres;Port=5432;Database=core;Pooling=true;Include Error Detail=true"
+      Jwt__Issuer: "contract-watcher-core"
+      Jwt__Audience: "contract-watcher"
+      Jwt__SigningKey: "9b6d3b3c5a0d4f1f9a7e1c2d3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a"
+      Jwt__AccessTokenMinutes: "15"
+      Jwt__RefreshTokenLifetimeDays: "30"
+    networks:
+      - contract-watcher
+
+  frontend:
+    image: ghcr.io/contract-watcher/contract-watcher-frontend:latest
+    container_name: pres-frontend
+    ports:
+      - "5174:80"
+    environment:
+      API_UPSTREAM: http://core:8080
+    depends_on:
+      - core
+    networks:
+      - contract-watcher
+
+volumes:
+  pgdata:
+
+networks:
+  contract-watcher:
+    driver: bridge
