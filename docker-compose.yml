@@ -10,6 +10,7 @@ services:
       - "55432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
+      - ./create-db.sql:/docker-entrypoint-initdb.d/create_database.sql
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d postgres"]
       interval: 5s
@@ -35,6 +36,25 @@ services:
       Jwt__SigningKey: "9b6d3b3c5a0d4f1f9a7e1c2d3f4a5b6c7d8e9f0a1b2c3d4e5f6a7b8c9d0e1f2a"
       Jwt__AccessTokenMinutes: "15"
       Jwt__RefreshTokenLifetimeDays: "30"
+      Monitoring__BaseUrl: "http://svc-monitoring:8082"
+      Monitoring__PollIntervalSeconds: "5"
+      Monitoring__BatchSize: "100"
+      Monitoring__RequestTimeoutSeconds: "10"
+    networks:
+      - contract-watcher
+
+  monitoring:
+    image: ghcr.io/contract-watcher/contract-watcher-monitoring:latest
+    container_name: svc-monitoring
+    depends_on:
+      postgres:
+        condition: service_healthy
+    ports:
+      - "8082:8080"
+    environment:
+      MONITORING_DATABASE_URL: "jdbc:postgresql://postgres:5432/monitoring"
+      MONITORING_DATABASE_USER: "postgres"
+      MONITORING_DATABASE_PASSWORD: "postgres"
     networks:
       - contract-watcher
 
