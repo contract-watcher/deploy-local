@@ -1,9 +1,10 @@
-core:
+services:
+
+  test-api:
     image: ghcr.io/contract-watcher/contract-watcher-test-api:latest
     container_name: svc-test-api
     ports:
       - "8086:8080"
-      - "8081:8081"
     environment:
       ContractWatcher__CoreUrl: "http://localhost:8080"
       ContractWatcher__IntegrationKey: "АПИ_КЛЮЧ"
