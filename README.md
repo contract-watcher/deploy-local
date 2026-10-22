@@ -29,3 +29,11 @@ docker compose down
 ```bash
 docker compose down -v
 ```
+
+## Запуск тестового апи
+
+Необходимо прописать апи ключ в переменную `IntegrationKey` и собрать контейнер
+
+```bash
+docker compose -f test-api-compose.yml up -d --force-recreate
+```
