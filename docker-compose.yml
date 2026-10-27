@@ -40,6 +40,8 @@ services:
       Monitoring__PollIntervalSeconds: "5"
       Monitoring__BatchSize: "100"
       Monitoring__RequestTimeoutSeconds: "10"
+      Smtp__Password: "wooccawmzytyuidx"
+      Notifications__FrontendBaseUrl: "http://localhost:5174"
     networks:
       - contract-watcher
 
